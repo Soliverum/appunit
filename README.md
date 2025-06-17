@@ -16,7 +16,6 @@
 
 - [Roadmap](./ROADMAP.md)
 - [Estrategia Multilenguaje](./MULTILANGUAGE_STRATEGY.md)
-- [Esquema de Base de Datos](./DATABASE_SCHEMA.md)
 - [Estrategia BIM/CAD](./BIM_CAD_INTEGRATION.md)
 - [Desarrollo Incremental y Modular](./INCREMENTAL_MODULAR_DEVELOPMENT.md)
 - [Buenas Prácticas y Documentación](./DOCS_AND_BEST_PRACTICES.md)
@@ -36,7 +35,7 @@
    yarn install
    # Backend
    cd ../backend
-   pip install -r requirements.txt
+   npm install
    ```
 
 3. Configura variables de entorno
@@ -44,13 +43,15 @@
    - Configura idiomas soportados: `en, es`
 
 4. Base de datos
-   - PostgreSQL 13+ recomendado
-   - Ejecuta migraciones iniciales (ver [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md))
+   - MongoDB (e.g., v5.0+ o compatible) recomendado.
+   - No se requieren migraciones estructuradas como en SQL; las estructuras de los documentos son definidas por los esquemas de Mongoose en `backend/models/`.
 
 5. Ejecuta los servidores
    ```bash
    # Backend
-   uvicorn main:app --reload
+   npm run dev  # Para desarrollo (con nodemon)
+   # o
+   npm start    # Para ejecución directa
    # Frontend (React)
    yarn start
    ```
@@ -58,7 +59,7 @@
 ## Estructura de carpetas
 
 - `/frontend`: Aplicación web/móvil (React, React Native, Tauri)
-- `/backend`: API (FastAPI, Python)
+- `/backend`: API (Node.js, Express)
 - `/docs`: Documentación técnica y de usuario
 - `/locales`: Archivos de recursos de traducción i18n
 

@@ -47,7 +47,6 @@
 ## 8. Recursos
 
 - [react-i18next docs](https://react.i18next.com/)
-- [Python Babel](https://babel.pocoo.org/)
 
 ---
 

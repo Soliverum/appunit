@@ -3,6 +3,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db'); // <--- ADD THIS
+const swaggerUi = require('swagger-ui-express'); // <--- ADD
+const swaggerSpec = require('./swaggerConfig'); // <--- ADD
 
 // const bodyParser = require('body-parser'); // No longer strictly needed for JSON/URLencoded
 
@@ -18,6 +20,9 @@ const app = express();
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // To parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // To parse URL-encoded request bodies
+
+// Swagger UI Setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // <--- ADD THIS
 
 // Basic Route
 app.get('/', (req, res) => {
