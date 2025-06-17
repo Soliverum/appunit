@@ -1,0 +1,10 @@
+{
+  "app": {
+    "title": "AppUnit",
+    "welcome": "¡Bienvenido a AppUnit!",
+    "project": "Proyecto",
+    "user": "Usuario",
+    "login": "Iniciar sesión",
+    "logout": "Cerrar sesión"
+  }
+}

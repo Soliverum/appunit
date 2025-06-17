@@ -1,0 +1,18 @@
+# Node
+node_modules/
+build/
+dist/
+# Python
+__pycache__/
+*.pyc
+.env
+# Editor
+.vscode/
+.idea/
+# OS
+.DS_Store
+Thumbs.db
+# Docs
+/docs/_site/
+# Locales
+/locales/*.bak
