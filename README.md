@@ -4,12 +4,12 @@
 
 ## Características principales
 
-- Gestión de usuarios, proyectos, recursos y documentos
+- Gestión de usuarios y roles (con autenticación JWT y control de acceso basado en roles)
+- Gestión de proyectos, recursos y documentos
 - Análisis de precios unitarios (APU) y presupuesto
 - Integración BIM (IFC, glTF) y CAD (DXF)
 - Control y seguimiento de costos reales
 - Gestión de tareas y programación (Gantt, Kanban)
-- Soporte multilenguaje (i18n) desde el MVP (Español/English)
 - Arquitectura modular, escalable y documentada
 
 ## Prerrequisitos
@@ -18,8 +18,7 @@ Para instalar y ejecutar AppUnit, necesitarás tener instalado lo siguiente:
 
 - Git
 - Python 3.7+
-- Node.js y Yarn
-## Tabla de contenidos
+- Node.js (recomendado v18 o superior) y Yarn
 
 - [Roadmap](./ROADMAP.md)
 - [Estrategia Multilenguaje](./MULTILANGUAGE_STRATEGY.md)
