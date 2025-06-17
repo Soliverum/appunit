@@ -12,6 +12,13 @@
 - Soporte multilenguaje (i18n) desde el MVP (Español/English)
 - Arquitectura modular, escalable y documentada
 
+## Prerrequisitos
+
+Para instalar y ejecutar AppUnit, necesitarás tener instalado lo siguiente:
+
+- Git
+- Python 3.7+
+- Node.js y Yarn
 ## Tabla de contenidos
 
 - [Roadmap](./ROADMAP.md)

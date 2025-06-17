@@ -1,0 +1,171 @@
+## High-Level Architecture for AppUnit
+
+### 1. Overall Architectural Pattern
+
+**Discussion:**
+
+*   **Monolithic Architecture:**
+    *   **Pros:** Simpler to develop, test, and deploy initially. Less operational overhead at the start. Easier to achieve strong consistency.
+    *   **Cons:** Can become complex and difficult to maintain as it grows (the "monolithic mudball"). Scaling requires scaling the entire application. Technology stack is locked in. A single bug can bring down the whole application. Less flexible for adopting new technologies for different parts of the application.
+    *   **AppUnit Context:** Given AppUnit's potential complexity with modules like APU, Budgeting, Scheduling, and BIM integration, a pure monolith could become unwieldy in the long term.
+
+*   **Microservices Architecture:**
+    *   **Pros:** Services are independently deployable and scalable. Technology diversity is possible for different services. Fault isolation (one service failing doesn't necessarily bring down others). Smaller, focused codebases are easier to understand and maintain by smaller, dedicated teams.
+    *   **Cons:** Increased operational complexity (deployment, monitoring, inter-service communication). Distributed system challenges (latency, eventual consistency, complex testing). Requires mature DevOps practices.
+    *   **AppUnit Context:** Could offer long-term scalability and maintainability, especially with a growing team and diverse functional modules. However, it might be an overkill for the initial development phase if the team is small.
+
+*   **Hybrid Architecture (e.g., Modular Monolith, or "Monolith First, then Microservices"):**
+    *   **Pros:** Starts with a well-structured monolith (modular design) which is easier to manage initially. As the application grows and specific areas demand more scalability or independent development, these modules can be gradually extracted into microservices. Reduces upfront complexity while planning for future scalability.
+    *   **Cons:** Requires careful design to ensure modules are truly independent. The transition to microservices can be complex if not planned well.
+    *   **AppUnit Context:** This seems like the most pragmatic approach. AppUnit has distinct functional areas (User Management, Project Management, APU Module, etc.) that can be designed as loosely coupled modules within a single application initially.
+
+**Recommendation: Hybrid Architecture (Modular Monolith evolving to Microservices)**
+
+**Justification:**
+A modular monolith approach is recommended for AppUnit's initial development. This allows for:
+*   **Faster Initial Development:** Reduced complexity compared to a full microservices setup from day one.
+*   **Clear Boundaries:** Designing the application with clear module boundaries (e.g., based on the Core Modules identified previously) from the outset. These modules would have well-defined APIs for internal communication.
+*   **Scalability Path:** As AppUnit grows and specific modules (e.g., BIM processing, reporting, or real-time collaboration) become performance bottlenecks or require independent scaling, they can be strategically extracted into separate microservices.
+*   **Team Growth:** Allows the team to grow and potentially specialize in different modules without the immediate overhead of managing a distributed system.
+*   **Technology Flexibility (Future):** Enables future adoption of different technologies for new microservices if needed.
+
+This approach balances initial development speed with long-term scalability and maintainability.
+
+### 2. Frontend Architecture
+
+**Recommended Primary Cross-Platform Technology: React Native (for Mobile) + React (for Web) + Tauri (for Desktop)**
+
+**Justification:**
+*   **Multiplatform Reach:**
+    *   **React Native:** Excellent for building performant native mobile apps for iOS and Android from a largely shared JavaScript/TypeScript codebase.
+    *   **React:** The de facto standard for web development, allowing significant code and logic sharing with React Native (e.g., business logic, state management, components with some adaptation).
+    *   **Tauri:** Offers a more secure, lightweight, and performant alternative to Electron for desktop applications, using web technologies for the UI. Its Rust backend can also be leveraged for performance-critical tasks on the desktop.
+*   **Ecosystem & Community:** The JavaScript/React ecosystem is vast, offering numerous libraries, tools, and a large talent pool.
+*   **Offline Capability:** React Native has good solutions for offline storage (see section 5).
+*   **BIM Visualization:** Libraries like `react-three-fiber` (for Three.js in React) can be used for web-based BIM model visualization. For mobile and desktop, this might involve native modules or WebViews rendering web-based visualizations.
+*   **Developer Experience:** Using a consistent language (JavaScript/TypeScript) and framework paradigm (React) across platforms can improve developer productivity and team flexibility.
+
+**State Management Strategy:**
+*   **Redux Toolkit (RTK) or Zustand for React/React Native; potentially XState for complex workflows.**
+    *   **Redux Toolkit:** Standard, predictable, powerful for complex state, good dev tools. Good for larger applications where a clear data flow is critical.
+    *   **Zustand:** Simpler, less boilerplate than traditional Redux, but still powerful. Good for when RTK feels too heavy.
+    *   **XState:** For managing complex, stateful logic, especially for workflows and processes within modules (e.g., multi-step APU creation, budget approval process). It can be used alongside RTK/Zustand.
+
+**Platform-Specific UI/UX Handling:**
+*   **Conditional Rendering:** Use platform detection (e.g., `Platform.OS` in React Native) to render different components or styles.
+*   **Platform-Specific Stylesheets:** Organize styles to apply platform-specific tweaks.
+*   **Adaptive Components:** Design components that can adapt their layout or behavior based on the platform and screen size.
+*   **Native Modules/APIs:** For features requiring deep native integration not covered by React Native or Tauri, write custom native modules (Swift/Objective-C for iOS, Kotlin/Java for Android, Rust for Tauri).
+*   **Design System:** Implement a design system with components that have platform-aware styling or provide platform-specific variants.
+
+### 3. Backend Architecture
+
+**Recommended Primary Backend Language/Framework: Node.js with Express**
+
+**Justification:**
+*   **Scalability & Performance:** FastAPI is built on Starlette and Pydantic, offering very high performance (comparable to Node.js and Go frameworks) and asynchronous capabilities, crucial for I/O-bound operations and real-time features.
+*   **Ecosystem:** Python has a rich ecosystem, especially for data science, machine learning (relevant for potential future APU optimizations, BIM data analysis, or predictive scheduling), and general-purpose libraries.
+*   **Developer Productivity:** Python's readability and FastAPI's features (automatic data validation, serialization, and documentation with Pydantic and OpenAPI) lead to faster development cycles.
+*   **Team Skills:** Python is a widely known language, making it easier to find developers.
+*   **AI/ML Integration:** If AppUnit plans to incorporate AI/ML features (e.g., cost prediction, anomaly detection in schedules), Python is a leading language in this domain.
+*   **Unified Language:** Using JavaScript/TypeScript across frontend and backend can simplify development and allow for easier knowledge sharing and code reuse. Node.js is highly performant for I/O-bound tasks.
+
+**API Design Style: RESTful APIs (initially), consider GraphQL for specific use cases later.**
+
+**Justification:**
+*   **RESTful APIs:** Well-understood, widely adopted, and simpler to implement initially. Good for resource-oriented interactions which fit many of AppUnit's modules (Projects, Tasks, APUs). Standard HTTP methods and status codes make it easy for clients to consume. OpenAPI support from FastAPI is a big plus.
+*   **GraphQL (Future Consideration):** Could be introduced for specific frontend needs or complex data fetching scenarios where clients need to request exactly the data they need, reducing over-fetching or under-fetching. For example, a dashboard view that aggregates data from multiple resources.
+
+**Microservice Decomposition (if Modular Monolith evolves):**
+If the modular monolith evolves, services could be decomposed based on the Core Modules:
+*   `UserService` (handles users, authentication, authorization)
+*   `ProjectService` (handles projects, tasks, scheduling)
+*   `APUService` (handles APU definitions, resource database)
+*   `BudgetService` (handles budgets, cost tracking)
+*   `BIMService` (handles BIM model processing, data extraction)
+*   `NotificationService` (handles notifications, communication)
+
+**Inter-service Communication:**
+*   **Synchronous:** REST APIs (HTTPS) for direct request/response interactions. Service discovery (e.g., Consul, Kubernetes DNS) would be needed.
+*   **Asynchronous:** Message Queues (e.g., RabbitMQ or Kafka) for event-driven communication, decoupling services, and improving resilience. For example, when a project status changes, an event is published, and other interested services (like NotificationService or ReportingService) can subscribe to it.
+
+**Authentication and Authorization Strategy:**
+*   **Authentication: JSON Web Tokens (JWT) using OAuth 2.0 (Authorization Code Flow or Client Credentials Flow).**
+    *   Clients (web, mobile, desktop) authenticate against an auth service/endpoint.
+    *   Upon successful authentication, a short-lived JWT access token and a long-lived refresh token are issued.
+    *   The access token is sent in the `Authorization` header for API requests.
+*   **Authorization: Role-Based Access Control (RBAC).**
+    *   Users are assigned roles (e.g., Admin, Project Manager, Viewer, Editor).
+    *   Permissions are associated with roles.
+    *   Backend services verify the JWT and check user roles/permissions before allowing access to resources or operations.
+    *   An API Gateway or the individual services can handle this.
+
+### 4. Database Architecture
+
+**Recommended Primary Database: MongoDB (NoSQL)** with potential for a relational database (like PostgreSQL) for specific, highly structured data if needed later.
+
+**Justification:**
+*   **Structured & Relational Data:** AppUnit's core data (users, projects, tasks, APU items, budget lines, schedules) is highly structured and relational. PostgreSQL excels at managing such data with strong integrity.
+*   **ACID Compliance:** Essential for financial transactions within the Budgeting & Cost Control module. PostgreSQL provides full ACID compliance.
+*   **Geospatial Data (BIM):** PostgreSQL with the PostGIS extension is very powerful for storing and querying geospatial data, which could be relevant for BIM models that include location information or site context.
+*   **Complex Queries & Joins:** Requirements like reporting, linking BIM elements to tasks and budget items, and complex APU calculations will necessitate powerful query capabilities.
+*   **Scalability & Reliability:**
+    *   **Scalability:** PostgreSQL offers various scaling strategies: vertical scaling (more powerful hardware), read replicas for distributing read load, and partitioning for distributing data across tables. For extreme write loads, sharding can be implemented, though it adds complexity.
+    *   **Flexibility for Complex Data:** MongoDB's document model is well-suited for handling complex, nested, and potentially evolving data structures, which can be advantageous for modules like BIM integration and potentially APU data where structures might vary.
+    *   **Scalability:** MongoDB is designed for horizontal scalability with built-in sharding capabilities.
+    *   **Ease of Use:** Generally considered easier to get started with for developers familiar with JSON-like data.
+*   **Ecosystem & Maturity:** PostgreSQL is a mature, feature-rich, and highly reliable open-source database with a strong community and good support in various cloud environments.
+
+**Hybrid Approach Consideration:**
+*   While PostgreSQL should be the primary database, a NoSQL document database (e.g., MongoDB) could be considered in the future for:
+    *   **BIM Model Metadata:** Storing large, complex, and potentially variably structured metadata extracted from BIM files if querying this data relationally becomes inefficient.
+    *   **User Activity Feeds/Logs:** Where schema flexibility and write performance for large volumes of append-only data are key.
+    *   **Caching:** For caching frequently accessed, denormalized data.
+    *   While MongoDB is recommended as the primary database due to its flexibility and scalability for varying data structures in AppUnit, a relational database like PostgreSQL could be considered for modules with very strict relational integrity requirements or where complex joins are fundamental and frequent. This would be a specific optimization for those modules.
+
+### 5. Offline Capability and Data Synchronization Strategy
+
+**Elaboration on Chosen Strategy: Backend-Orchestrated Sync with Versioning & Timestamps**
+
+**Justification:**
+This approach offers a good balance between implementation complexity and robustness for AppUnit's needs. While CRDTs are powerful, they can be significantly more complex to implement correctly. A well-designed backend-orchestrated sync can handle most common scenarios effectively.
+
+**Local Data Storage on Client Devices:**
+*   **React Native / Web / Tauri (JavaScript/TypeScript ecosystem):**
+    *   **SQLite:** A robust choice for structured relational data. Libraries like `react-native-sqlite-storage` for mobile, or using SQLite via WebAssembly (e.g., `sql.js`) or through Tauri's Rust backend for desktop/web.
+    *   **WatermelonDB (for React/React Native):** Built on top of SQLite (or a native database), designed for building complex React/React Native apps with offline-first capabilities. It's observable and sync-friendly.
+    *   **PouchDB (for Web/Progressive Web Apps):** A NoSQL JavaScript database that syncs with CouchDB-compatible servers. Could be an option if a NoSQL backend is also used for certain data.
+*   **Data Model:** The local database schema should mirror the relevant parts of the backend database schema to store projects, tasks, APUs, etc., that the user needs offline.
+
+**Synchronization Flow:**
+*   **When Sync Occurs:**
+    *   **On App Start:** Initial sync to fetch latest data and pending changes.
+    *   **Periodically:** Background sync at regular intervals (e.g., every 5-15 minutes) if the app is active.
+    *   **On Data Change (Optimistic Updates):** When the user makes a change locally, the UI updates immediately (optimistic update). The change is queued and synced to the backend as soon as possible.
+    *   **Manual Trigger:** A "Sync Now" button for users to initiate a sync on demand.
+    *   **Network Status Change:** Trigger sync when network connectivity is restored.
+
+*   **Conflict Detection and Resolution:**
+    *   **Versioning:** Each record (or relevant entity) on both client and server will have a version number (or a last updated timestamp).
+    *   **Detection:**
+        *   When client sends changes: If the server's version of a record is newer than the client's base version for that change, a conflict is detected.
+        *   When client fetches changes: If the client has local un-synced changes for a record that the server has also updated, a conflict is detected.
+    *   **Resolution Strategies (can be configurable or entity-specific):**
+        *   **Last-Write-Wins (LWW):** The change with the most recent timestamp/version overwrites the other. Simplest but can lead to data loss.
+        *   **User Intervention:** Present the conflict to the user, showing both versions and allowing them to choose which one to keep or how to merge. This is often best for critical data.
+        *   **Predefined Rules:** Domain-specific rules. For example, a project status change by a Project Manager might override a status change by a team member.
+        *   **Operational Transformation (OT) / Differential Synchronization:** More complex, but better for collaborative editing of structured data or text. May be overkill initially.
+
+*   **Data Consistency (Online/Offline):**
+    *   **Single Source of Truth:** The backend database is the ultimate source of truth.
+    *   **Sync Queue:** Local changes are added to a queue and processed sequentially. If a sync fails, it's retried.
+    *   **State Reconciliation:** After a sync, the client updates its local state to reflect the server's authoritative version (or the resolved version in case of conflicts).
+    *   **Clear UI Indicators:** Provide feedback to the user about the sync status (e.g., "Syncing...", "Offline", "Last synced: ...").
+
+**Impact of Large Data Sets (BIM models, project documentation):**
+*   **Selective Sync:** Users should be able to choose which projects or data sets to sync for offline access. Syncing all BIM models for all projects might be impractical.
+*   **Delta Syncing:** Only sync changes (deltas) rather than entire datasets. This is inherent in the versioning/timestamp approach.
+*   **Lazy Loading for Large Files:** For large files like BIM models or high-resolution documents, sync metadata and placeholders initially. Download the full file on demand when the user tries to access it (if online). For offline access, users might need to explicitly mark large files for "offline availability."
+*   **Background Downloads/Uploads:** Handle large file transfers in the background, allowing the user to continue using the app. Provide progress indicators and allow pausing/resuming.
+*   **Compression:** Compress data before transmission to reduce sync time and bandwidth usage.
+*   **Optimized File Formats:** For BIM, use efficient formats for transfer or pre-process models on the backend to extract only necessary data for mobile/offline views.

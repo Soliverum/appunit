@@ -1,0 +1,24 @@
+{
+  "name": "appunit-backend",
+  "version": "1.0.0",
+  "description": "Backend for AppUnit construction management platform",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@genkit-ai/core": "latest",
+    "@genkit-ai/googleai": "latest",
+    "genkit": "latest",
+    "nodemailer": "^7.0.3"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "authentication"
+  ],
+  "author": "",
+  "license": "MIT"
+}
